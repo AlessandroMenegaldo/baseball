@@ -44,3 +44,29 @@ class DAO():
         cursor.close()
         conn.close()
         return result
+
+    @staticmethod
+    def getSalaryOfTeams(year, idMap):
+        conn = DBConnect.get_connection()
+
+        result = []
+
+        cursor = conn.cursor(dictionary=True)
+        query = """SELECT t.teamCode , t.ID , sum(s.salary) as totSalary
+                    FROM salaries s , teams t , appearances a 
+                    WHERE s.`year` = t.`year` and t.`year` = a.`year` 
+                    and a.`year` = %s
+                    and t.ID = a.teamID 
+                    and s.playerID = a.playerID 
+                    GROUP by t.teamCode"""
+
+        cursor.execute(query, (year,))
+
+        result = {}
+        for row in cursor:
+            # result.append( (idMap[row["ID"]], row["totSalary"]) )
+            result[idMap[row["ID"]]] = row["totSalary"]
+
+        cursor.close()
+        conn.close()
+        return result
